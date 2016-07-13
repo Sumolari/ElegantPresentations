@@ -31,10 +31,12 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 
 	public lazy var picker: UIPickerView = { [unowned self] in
 
+        let maxHeight = (UIApplication.sharedApplication().delegate?.window??.rootViewController?.view.frame.size.height ?? 0) * 0.25
+        
 		let picker = UIPickerView()
 		picker.translatesAutoresizingMaskIntoConstraints = false
 		self.contentView.addSubview(picker)
-		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-[filterField]-[picker(<=130)]-0-|", options: [], metrics: nil, views: ["filterField": self.filterField, "picker": picker]))
+		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-[filterField]-[picker(<=maxHeight)]-0-|", options: [], metrics: ["maxHeight":maxHeight], views: ["filterField": self.filterField, "picker": picker]))
 		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[picker]-0-|", options: [], metrics: nil, views: ["picker": picker]))
 
 		return picker
