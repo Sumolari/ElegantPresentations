@@ -13,7 +13,7 @@ public class MultilineDateCell: Cell<NSDate>, CellType {
 	lazy public var datePicker = UIDatePicker()
 
 	public required init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-		super.init(style: style, reuseIdentifier: NSStringFromClass(MultilineDateCell))
+		super.init(style: style, reuseIdentifier: reuseIdentifier)
 	}
 
 	public override func setup() {

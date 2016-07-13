@@ -23,12 +23,12 @@ class ViewController: FormViewController {
 		<<< FilterablePickerRow<String>() {
 			$0.title = "Picker"
 			$0.options = ["One", "Two", "Three"]
-			$0.filterHint = "Filter..."
+			$0.filterPlaceholder = "Filter..."
 		}
 		<<< FilterablePickerInlineRow<String>() {
 			$0.title = "Picker"
 			$0.options = ["One", "Two", "Three"]
-			$0.filterHint = "Filter..."
+			$0.filterPlaceholder = "Filter..."
 		}
 		/*
 		 <<< PickerInlineRow<String>(){
