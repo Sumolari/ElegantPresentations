@@ -34,7 +34,7 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 		let picker = UIPickerView()
 		picker.translatesAutoresizingMaskIntoConstraints = false
 		self.contentView.addSubview(picker)
-		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-[filterField]-[picker]-0-|", options: [], metrics: nil, views: ["filterField": self.filterField, "picker": picker]))
+		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-[filterField]-[picker(<=130)]-0-|", options: [], metrics: nil, views: ["filterField": self.filterField, "picker": picker]))
 		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[picker]-0-|", options: [], metrics: nil, views: ["picker": picker]))
 
 		return picker
@@ -148,8 +148,15 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 
 	// MARK: Text field delegate
 
+    
 	public func textFieldDidBeginEditing(textField: UITextField) {
-		textField.inputAccessoryView = self.inputAccessoryView
+        
+        if let v = formViewController()?.inputAccessoryViewForRow(row) as? NavigationAccessoryView {
+            v.previousButton.enabled = false
+            v.nextButton.enabled = false
+            textField.inputAccessoryView = v
+        }
+        
 	}
 
 }
