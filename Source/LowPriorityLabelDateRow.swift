@@ -1,5 +1,5 @@
 //
-//  MultilineDateRow.swift
+//  LowPriorityLabelDateRow.swift
 //  Pods
 //
 //  Created by Lluís Ulzurrun on 13/7/16.
@@ -8,12 +8,12 @@
 
 import Eureka
 
-public class MultilineDateCell: Cell<NSDate>, CellType {
+public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 
 	lazy public var datePicker = UIDatePicker()
 
 	public required init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-		super.init(style: style, reuseIdentifier: NSStringFromClass(MultilineDateCell))
+		super.init(style: style, reuseIdentifier: NSStringFromClass(LowPriorityLabelDateCell))
 	}
 
 	public override func setup() {
@@ -26,16 +26,22 @@ public class MultilineDateCell: Cell<NSDate>, CellType {
 
 		let views = ["textLabel": textLabel!, "detailTextLabel": detailTextLabel!]
 
+		textLabel?.setContentCompressionResistancePriority(UILayoutPriorityDefaultLow, forAxis: .Horizontal)
+		textLabel?.lineBreakMode = .ByTruncatingHead
+		textLabel?.adjustsFontSizeToFitWidth = true
+
+		detailTextLabel?.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, forAxis: .Horizontal)
+
 		let constraints =
-			NSLayoutConstraint.constraintsWithVisualFormat("|-[textLabel]-|", options: [], metrics: [:], views: views) +
-			NSLayoutConstraint.constraintsWithVisualFormat("V:|-[textLabel]-[detailTextLabel]-|", options: [], metrics: [:], views: views) +
-			NSLayoutConstraint.constraintsWithVisualFormat("|-[detailTextLabel]-|", options: [], metrics: [:], views: views)
+			NSLayoutConstraint.constraintsWithVisualFormat("|-[textLabel]-[detailTextLabel]-|", options: [], metrics: [:], views: views) +
+			NSLayoutConstraint.constraintsWithVisualFormat("V:|-[textLabel]-|", options: [], metrics: [:], views: views) +
+			NSLayoutConstraint.constraintsWithVisualFormat("V:|-[detailTextLabel]-|", options: [], metrics: [:], views: views)
 		contentView.addConstraints(constraints)
 
 		accessoryType = .None
 		editingAccessoryType = .None
 		datePicker.datePickerMode = datePickerMode()
-		datePicker.addTarget(self, action: #selector(MultilineDateCell.datePickerValueChanged(_:)), forControlEvents: .ValueChanged)
+		datePicker.addTarget(self, action: #selector(LowPriorityLabelDateCell.datePickerValueChanged(_:)), forControlEvents: .ValueChanged)
 	}
 
 	deinit {
@@ -95,7 +101,7 @@ public class MultilineDateCell: Cell<NSDate>, CellType {
 	}
 }
 
-public class _MultilineDateFieldRow: Row<NSDate, MultilineDateCell>, DatePickerRowProtocol, NoValueDisplayTextConformance {
+public class _LowPriorityLabelDateFieldRow: Row<NSDate, LowPriorityLabelDateCell>, DatePickerRowProtocol, NoValueDisplayTextConformance {
 
 	/// The minimum value for this row's UIDatePicker
 	public var minimumDate: NSDate?
@@ -120,7 +126,7 @@ public class _MultilineDateFieldRow: Row<NSDate, MultilineDateCell>, DatePickerR
 	}
 }
 
-public class _MultilineDateRow: _MultilineDateFieldRow {
+public class _LowPriorityLabelDateRow: _LowPriorityLabelDateFieldRow {
 	required public init(tag: String?) {
 		super.init(tag: tag)
 		dateFormatter = NSDateFormatter()
@@ -131,7 +137,7 @@ public class _MultilineDateRow: _MultilineDateFieldRow {
 }
 
 /// A row with an NSDate as value where the user can select a date from a picker view.
-public final class MultilineDateRow: _MultilineDateRow, RowType {
+public final class LowPriorityLabelDateRow: _LowPriorityLabelDateRow, RowType {
 	required public init(tag: String?) {
 		super.init(tag: tag)
 		onCellHighlight { cell, row in
