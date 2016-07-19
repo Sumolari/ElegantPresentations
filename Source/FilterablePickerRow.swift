@@ -31,12 +31,12 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 
 	public lazy var picker: UIPickerView = { [unowned self] in
 
-        let maxHeight = (UIApplication.sharedApplication().delegate?.window??.rootViewController?.view.frame.size.height ?? 0) * 0.25
-        
+		let maxHeight = (UIApplication.sharedApplication().delegate?.window??.rootViewController?.view.frame.size.height ?? 0) * 0.25
+
 		let picker = UIPickerView()
 		picker.translatesAutoresizingMaskIntoConstraints = false
 		self.contentView.addSubview(picker)
-		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-[filterField]-[picker(<=maxHeight)]-0-|", options: [], metrics: ["maxHeight":maxHeight], views: ["filterField": self.filterField, "picker": picker]))
+		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-[filterField]-[picker(<=maxHeight)]-0-|", options: [], metrics: ["maxHeight": maxHeight], views: ["filterField": self.filterField, "picker": picker]))
 		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[picker]-0-|", options: [], metrics: nil, views: ["picker": picker]))
 
 		return picker
@@ -150,15 +150,14 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 
 	// MARK: Text field delegate
 
-    
 	public func textFieldDidBeginEditing(textField: UITextField) {
-        
-        if let v = formViewController()?.inputAccessoryViewForRow(row) as? NavigationAccessoryView {
-            v.previousButton.enabled = false
-            v.nextButton.enabled = false
-            textField.inputAccessoryView = v
-        }
-        
+
+		if let v = formViewController()?.inputAccessoryViewForRow(row) as? NavigationAccessoryView {
+			v.previousButton.enabled = false
+			v.nextButton.enabled = false
+			textField.inputAccessoryView = v
+		}
+
 	}
 
 }
@@ -168,7 +167,11 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 public final class FilterablePickerRow<T where T: Equatable>: Row<T, FilterablePickerCell<T>>, RowType {
 
 	public var options = [T]()
-	public var filterPlaceholder = ""
+	public var filterPlaceholder: String? {
+		didSet {
+			self.cell.filterField.placeholder = self.filterPlaceholder
+		}
+	}
 
 	required public init(tag: String?) {
 		super.init(tag: tag)
@@ -208,7 +211,11 @@ public final class FilterablePickerInlineRow<T where T: Equatable>: Row<T, Filte
 	public typealias InlineRow = FilterablePickerRow<T>
 	public var options = [T]()
 	public var noValueDisplayText: String?
-	public var filterPlaceholder = ""
+	public var filterPlaceholder: String? {
+		didSet {
+			self.inlineRow?.filterPlaceholder = self.filterPlaceholder
+		}
+	}
 
 	required public init(tag: String?) {
 		super.init(tag: tag)
