@@ -12,6 +12,14 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 
 	lazy public var datePicker = UIDatePicker()
 
+	var containerLeadingAnchorToTitleLabelLeadingConstraint: NSLayoutConstraint? = nil
+	var containerTopAnchorToTitleLabelTopConstraint: NSLayoutConstraint? = nil
+	var containerBottomAnchorToTitleLabelBottomConstraint: NSLayoutConstraint? = nil
+	var titleLabelTrailingToDateLabelLeadingConstraint: NSLayoutConstraint? = nil
+	var sameTopForTitleAndDateLabelsConstraint: NSLayoutConstraint? = nil
+	var sameBottomForTitleAndDateLabelsConstraint: NSLayoutConstraint? = nil
+	var dateLabelTrailingToContainerTrailingAnchorConstraint: NSLayoutConstraint? = nil
+
 	public required init(style: UITableViewCellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: NSStringFromClass(LowPriorityLabelDateCell))
 	}
@@ -19,29 +27,128 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 	public override func setup() {
 		super.setup()
 
-		NSLayoutConstraint.deactivateConstraints(textLabel?.constraints ?? [])
-		NSLayoutConstraint.deactivateConstraints(detailTextLabel?.constraints ?? [])
-		textLabel?.translatesAutoresizingMaskIntoConstraints = false
-		detailTextLabel?.translatesAutoresizingMaskIntoConstraints = false
-
-		let views = ["textLabel": textLabel!, "detailTextLabel": detailTextLabel!]
-
-		textLabel?.setContentCompressionResistancePriority(UILayoutPriorityDefaultLow, forAxis: .Horizontal)
+		// textLabel?.setContentHuggingPriority(UILayoutPriorityDefaultLow, forAxis: .Horizontal)
 		textLabel?.lineBreakMode = .ByTruncatingHead
 		textLabel?.adjustsFontSizeToFitWidth = true
 
-		detailTextLabel?.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, forAxis: .Horizontal)
-
-		let constraints =
-			NSLayoutConstraint.constraintsWithVisualFormat("|-[textLabel]-[detailTextLabel]-|", options: [], metrics: [:], views: views) +
-			NSLayoutConstraint.constraintsWithVisualFormat("V:|-[textLabel]-|", options: [], metrics: [:], views: views) +
-			NSLayoutConstraint.constraintsWithVisualFormat("V:|-[detailTextLabel]-|", options: [], metrics: [:], views: views)
-		contentView.addConstraints(constraints)
+		// detailTextLabel?.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, forAxis: .Horizontal)
 
 		accessoryType = .None
 		editingAccessoryType = .None
 		datePicker.datePickerMode = datePickerMode()
 		datePicker.addTarget(self, action: #selector(LowPriorityLabelDateCell.datePickerValueChanged(_:)), forControlEvents: .ValueChanged)
+
+		self.setNeedsUpdateConstraints()
+	}
+
+	public override func updateConstraints() {
+		super.updateConstraints()
+
+		guard let textLabel = self.textLabel, detailTextLabel = self.detailTextLabel
+		where textLabel.superview === self.contentView && detailTextLabel.superview === self.contentView
+		else { return }
+
+		textLabel.translatesAutoresizingMaskIntoConstraints = false
+		detailTextLabel.translatesAutoresizingMaskIntoConstraints = false
+
+		var constraintsToBeAdded = [NSLayoutConstraint]()
+		var constraintsToBeEnabled = [NSLayoutConstraint]()
+
+		if let constraint = self.containerLeadingAnchorToTitleLabelLeadingConstraint {
+			constraintsToBeEnabled.append(constraint)
+		} else {
+			let constraint = NSLayoutConstraint(
+				attribute: .Leading,
+				ofView: textLabel,
+				equalToAttribute: .LeadingMargin,
+				ofView: self.contentView
+			)
+			constraintsToBeAdded.append(constraint)
+			self.containerLeadingAnchorToTitleLabelLeadingConstraint = constraint
+		}
+
+		if let constraint = self.containerTopAnchorToTitleLabelTopConstraint {
+			constraintsToBeEnabled.append(constraint)
+		} else {
+			let constraint = NSLayoutConstraint(
+				attribute: .Top,
+				ofView: textLabel,
+				equalToAttribute: .TopMargin,
+				ofView: self.contentView
+			)
+			constraint.priority = UILayoutPriorityDefaultHigh
+			constraintsToBeAdded.append(constraint)
+			self.containerTopAnchorToTitleLabelTopConstraint = constraint
+		}
+
+		if let constraint = self.containerBottomAnchorToTitleLabelBottomConstraint {
+			constraintsToBeEnabled.append(constraint)
+		} else {
+			let constraint = NSLayoutConstraint(
+				attribute: .Bottom,
+				ofView: textLabel,
+				equalToAttribute: .BottomMargin,
+				ofView: self.contentView
+			)
+			constraintsToBeAdded.append(constraint)
+			self.containerBottomAnchorToTitleLabelBottomConstraint = constraint
+		}
+
+		if let constraint = self.titleLabelTrailingToDateLabelLeadingConstraint {
+			constraintsToBeEnabled.append(constraint)
+		} else {
+			let constraint = NSLayoutConstraint(
+				attribute: .Trailing,
+				ofView: textLabel,
+				equalToAttribute: .Leading,
+				ofView: detailTextLabel
+			)
+			constraintsToBeAdded.append(constraint)
+			self.titleLabelTrailingToDateLabelLeadingConstraint = constraint
+		}
+
+		if let constraint = self.sameTopForTitleAndDateLabelsConstraint {
+			constraintsToBeEnabled.append(constraint)
+		} else {
+			let constraint = NSLayoutConstraint(
+				attribute: .Top,
+				ofView: textLabel,
+				equalToAttribute: .Top,
+				ofView: detailTextLabel
+			)
+			constraintsToBeAdded.append(constraint)
+			self.sameTopForTitleAndDateLabelsConstraint = constraint
+		}
+
+		if let constraint = self.sameBottomForTitleAndDateLabelsConstraint {
+			constraintsToBeEnabled.append(constraint)
+		} else {
+			let constraint = NSLayoutConstraint(
+				attribute: .Bottom,
+				ofView: textLabel,
+				equalToAttribute: .Bottom,
+				ofView: detailTextLabel
+			)
+			constraintsToBeAdded.append(constraint)
+			self.sameBottomForTitleAndDateLabelsConstraint = constraint
+		}
+
+		if let constraint = self.dateLabelTrailingToContainerTrailingAnchorConstraint {
+			constraintsToBeEnabled.append(constraint)
+		} else {
+			let constraint = NSLayoutConstraint(
+				attribute: .Trailing,
+				ofView: detailTextLabel,
+				equalToAttribute: .TrailingMargin,
+				ofView: self.contentView
+			)
+			constraintsToBeAdded.append(constraint)
+			self.dateLabelTrailingToContainerTrailingAnchorConstraint = constraint
+		}
+
+		self.contentView.addConstraints(constraintsToBeAdded)
+		NSLayoutConstraint.activateConstraints(constraintsToBeEnabled)
+
 	}
 
 	deinit {
@@ -58,6 +165,9 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 		if let minuteIntervalValue = (row as? DatePickerRowProtocol)?.minuteInterval {
 			datePicker.minuteInterval = minuteIntervalValue
 		}
+
+		self.setNeedsUpdateConstraints()
+
 	}
 
 	public override func didSelect() {
