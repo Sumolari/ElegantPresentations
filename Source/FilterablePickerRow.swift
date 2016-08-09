@@ -90,9 +90,9 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 		return item.resultFor(term: term)
 	}
 
-	public func updateResultsWithNewFilter(filter: String?) {
+	public func updateResultsWithNewFilter(filter: String?, forced: Bool = false) {
 
-		guard filter != lastFilterApplied else {
+		guard filter != lastFilterApplied || forced else {
 			return
 		}
 
@@ -166,7 +166,15 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 
 public final class FilterablePickerRow<T where T: Equatable>: Row<T, FilterablePickerCell<T>>, RowType {
 
-	public var options = [T]()
+	public var options = [T]() {
+		didSet {
+			self.cell.updateResultsWithNewFilter(
+				self.cell.filterField.text,
+				forced: true
+			)
+		}
+	}
+
 	public var filterPlaceholder: String? {
 		didSet {
 			self.cell.filterField.placeholder = self.filterPlaceholder
@@ -209,7 +217,11 @@ public class FilterablePickerInlineCell<T where T: Equatable>: Cell<T>, CellType
 public final class FilterablePickerInlineRow<T where T: Equatable>: Row<T, FilterablePickerInlineCell<T>>, RowType, InlineRowType, NoValueDisplayTextConformance {
 
 	public typealias InlineRow = FilterablePickerRow<T>
-	public var options = [T]()
+	public var options = [T]() {
+		didSet {
+			self.inlineRow?.options = self.options
+		}
+	}
 	public var noValueDisplayText: String?
 	public var filterPlaceholder: String? {
 		didSet {
@@ -241,4 +253,10 @@ public final class FilterablePickerInlineRow<T where T: Equatable>: Row<T, Filte
 		inlineRow.filterPlaceholder = self.filterPlaceholder
 		inlineRow.cell.selectionStyle = .None
 	}
+
+	override public func customUpdateCell() {
+		super.customUpdateCell()
+		self.inlineRow?.customUpdateCell()
+	}
+
 }

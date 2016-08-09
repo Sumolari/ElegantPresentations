@@ -110,7 +110,8 @@ Pod::Spec.new do |s|
   #
 
   # s.resource  = "icon.png"
-  s.resources = "Resources/**/*.xib"
+
+  s.resources = 'Resources/EurekaExtensions.bundle'
 
   # s.preserve_paths = "FilesToSave", "MoreFilesToSave"
 
