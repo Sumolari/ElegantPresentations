@@ -42,16 +42,13 @@ public class KeyboardPickerCell<T where T: Equatable>: Cell<T>, CellType, UIPick
 	public override func update() {
 		super.update()
 
-		if pickerRow?.options.count == 1 {
-			pickerRow?.value = pickerRow?.options.first
-		}
-
 		textLabel?.text = pickerRow?.title
 		detailTextLabel?.text = pickerRow?.displayValueFor?(pickerRow?.value)
 		picker.reloadAllComponents()
 		if let selectedValue = pickerRow?.value, let index = pickerRow?.options.indexOf(selectedValue) {
 			picker.selectRowAtIndex(index)
 		}
+
 	}
 
 	public override func cellCanBecomeFirstResponder() -> Bool {
@@ -61,18 +58,18 @@ public class KeyboardPickerCell<T where T: Equatable>: Cell<T>, CellType, UIPick
 	public override func cellBecomeFirstResponder(direction: Direction) -> Bool {
 		picker.pickerInputAccessoryView = inputAccessoryView
 		picker.showPicker()
-		return true
+		return super.cellBecomeFirstResponder(direction)
 	}
 
 	public override func cellResignFirstResponder() -> Bool {
 		picker.hidePicker()
-		return true
+		return super.cellResignFirstResponder()
 	}
 
 	// MARK: User interaction
 
 	public override func didSelect() {
-        pickerRow?.deselect()
+		pickerRow?.deselect()
 		self.cellBecomeFirstResponder(.Down)
 	}
 
