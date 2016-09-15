@@ -41,6 +41,11 @@ public class KeyboardPickerCell<T where T: Equatable>: Cell<T>, CellType, UIPick
 
 	public override func update() {
 		super.update()
+
+		if pickerRow?.options.count == 1 {
+			pickerRow?.value = pickerRow?.options.first
+		}
+
 		textLabel?.text = pickerRow?.title
 		detailTextLabel?.text = pickerRow?.displayValueFor?(pickerRow?.value)
 		picker.reloadAllComponents()
@@ -67,7 +72,7 @@ public class KeyboardPickerCell<T where T: Equatable>: Cell<T>, CellType, UIPick
 	// MARK: User interaction
 
 	public override func didSelect() {
-		self.unhighlight()
+        pickerRow?.deselect()
 		self.cellBecomeFirstResponder(.Down)
 	}
 
@@ -88,7 +93,7 @@ public class KeyboardPickerCell<T where T: Equatable>: Cell<T>, CellType, UIPick
 	public func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
 		if let picker = pickerRow where !picker.options.isEmpty {
 			picker.value = picker.options[row]
-            detailTextLabel?.text = pickerRow?.displayValueFor?(pickerRow?.value)
+			detailTextLabel?.text = pickerRow?.displayValueFor?(pickerRow?.value)
 		}
 	}
 
