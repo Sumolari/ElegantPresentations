@@ -45,6 +45,8 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 
 	public var lastFilterApplied: String?
 
+	public var optionForNewEntry: (String -> (option: T, displayValue: String)?)? = nil
+
 	public var filteredOptions: [T] = []
 
 	private var pickerRow: FilterablePickerRow<T>? { return self.row as? FilterablePickerRow<T> }
@@ -73,7 +75,9 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 		textLabel?.text = nil
 		detailTextLabel?.text = nil
 		self.picker.reloadAllComponents()
-		if let selectedValue = self.pickerRow?.value, let index = self.pickerRow?.options.indexOf(selectedValue) {
+		if let selectedValue = self.pickerRow?.value,
+			index = self.pickerRow?.options.indexOf(selectedValue)
+		{
 			self.picker.selectRow(index, inComponent: 0, animated: true)
 		}
 	}
@@ -99,9 +103,16 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 		self.lastFilterApplied = filter
 
 		if let newFilter = self.lastFilterApplied {
+
 			self.filteredOptions = self.pickerRow?.options.filter { (item) -> Bool in
 				return self.shouldIncludeItem(item, term: newFilter)
 			} ?? []
+
+			if let block = self.optionForNewEntry, additionalOption = block(newFilter)
+			where newFilter != "" {
+				self.filteredOptions = [additionalOption.option] + filteredOptions
+			}
+
 		} else {
 			self.filteredOptions = self.pickerRow?.options ?? []
 		}
@@ -110,11 +121,10 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 
 		if self.filteredOptions.count == 1 {
 			self.selectFilteredOption(0)
-		} else if
-		let picker = self.pickerRow where !picker.options.isEmpty,
-			let value = picker.value,
-			let row = self.filteredOptions.indexOf(value)
-		{
+		} else if let picker = self.pickerRow,
+			value = picker.value,
+			row = self.filteredOptions.indexOf(value)
+		where !picker.options.isEmpty {
 			self.picker.selectRow(row, inComponent: 0, animated: true)
 		}
 
@@ -140,7 +150,19 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 		return self.filteredOptions.count ?? 0
 	}
 
-	public func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+	public func pickerView(
+		pickerView: UIPickerView,
+		titleForRow row: Int,
+		forComponent component: Int
+	) -> String? {
+
+		if let filter = self.lastFilterApplied,
+			block = self.optionForNewEntry,
+			tuple = block(filter)
+		where filter != "" && row == 0 {
+			return tuple.displayValue
+		}
+
 		return self.pickerRow?.displayValueFor?(self.filteredOptions[row])
 	}
 
@@ -165,6 +187,15 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 //MARK: - Filterable Picker Row
 
 public final class FilterablePickerRow<T where T: Equatable>: Row<T, FilterablePickerCell<T>>, RowType {
+
+	public var optionForNewEntry: (String -> (option: T, displayValue: String)?)? {
+		get {
+			return self.cell.optionForNewEntry
+		}
+		set {
+			self.cell.optionForNewEntry = newValue
+		}
+	}
 
 	public var options = [T]() {
 		didSet {
@@ -216,6 +247,12 @@ public class FilterablePickerInlineCell<T where T: Equatable>: Cell<T>, CellType
 
 public final class FilterablePickerInlineRow<T where T: Equatable>: Row<T, FilterablePickerInlineCell<T>>, RowType, InlineRowType, NoValueDisplayTextConformance {
 
+	public var optionForNewEntry: (String -> (option: T, displayValue: String)?)? {
+		didSet {
+			self.inlineRow?.optionForNewEntry = self.optionForNewEntry
+		}
+	}
+
 	public typealias InlineRow = FilterablePickerRow<T>
 	public var options = [T]() {
 		didSet {
@@ -252,6 +289,7 @@ public final class FilterablePickerInlineRow<T where T: Equatable>: Row<T, Filte
 		inlineRow.displayValueFor = self.displayValueFor
 		inlineRow.filterPlaceholder = self.filterPlaceholder
 		inlineRow.cell.selectionStyle = .None
+		inlineRow.optionForNewEntry = self.optionForNewEntry
 	}
 
 	override public func customUpdateCell() {
