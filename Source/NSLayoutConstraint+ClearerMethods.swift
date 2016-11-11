@@ -28,7 +28,7 @@ extension NSLayoutConstraint {
 		self.init(
 			item: fromView,
 			attribute: attribute,
-			relatedBy: .Equal,
+			relatedBy: .equal,
 			toItem: toView,
 			attribute: attribute,
 			multiplier: 1,
@@ -56,7 +56,7 @@ extension NSLayoutConstraint {
 		self.init(
 			item: fromView,
 			attribute: fromViewAttribute,
-			relatedBy: .Equal,
+			relatedBy: .equal,
 			toItem: toView,
 			attribute: toViewAttribute,
 			multiplier: 1,

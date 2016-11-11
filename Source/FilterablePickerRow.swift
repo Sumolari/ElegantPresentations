@@ -12,53 +12,80 @@ import Eureka
 
 //MARK: - Filterable Picker Cell
 
-public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate {
+open class FilterablePickerCell<T>: Cell<T>, CellType, UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate where T: Equatable {
 
-	public lazy var filterField: UITextField = { [unowned self] in
+	open lazy var filterField: UITextField = { [unowned self] in
 
 		let filterField = UITextField()
-		filterField.clearButtonMode = .Always
+		filterField.clearButtonMode = .always
 		filterField.placeholder = self.pickerRow?.filterPlaceholder
-		filterField.addTarget(self, action: "textFieldDidChange:", forControlEvents: .EditingChanged)
+		filterField.addTarget(self, action: "textFieldDidChange:", for: .editingChanged)
 		filterField.translatesAutoresizingMaskIntoConstraints = false
 		filterField.delegate = self
 		self.contentView.addSubview(filterField)
-		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-[filterField]-|", options: [], metrics: nil, views: ["filterField": filterField]))
+		self.contentView.addConstraints(
+            NSLayoutConstraint.constraints(
+                withVisualFormat: "H:|-[filterField]-|",
+                options: [],
+                metrics: nil,
+                views: ["filterField": filterField]
+            )
+        )
 
 		return filterField
 
 	}()
 
-	public lazy var picker: UIPickerView = { [unowned self] in
+	open lazy var picker: UIPickerView = { [unowned self] in
 
-		let maxHeight = (UIApplication.sharedApplication().delegate?.window??.rootViewController?.view.frame.size.height ?? 0) * 0.25
+		let maxHeight = (UIApplication.shared.delegate?.window??.rootViewController?.view.frame.size.height ?? 0) * 0.25
 
 		let picker = UIPickerView()
 		picker.translatesAutoresizingMaskIntoConstraints = false
 		self.contentView.addSubview(picker)
-		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-[filterField]-[picker(<=maxHeight)]-0-|", options: [], metrics: ["maxHeight": maxHeight], views: ["filterField": self.filterField, "picker": picker]))
-		self.contentView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-0-[picker]-0-|", options: [], metrics: nil, views: ["picker": picker]))
+		self.contentView.addConstraints(
+            NSLayoutConstraint.constraints(
+                withVisualFormat: "V:|-[filterField]-[picker(<=maxHeight)]-0-|",
+                options: [],
+                metrics: ["maxHeight": maxHeight],
+                views: ["filterField": self.filterField, "picker": picker]
+            )
+        )
+		self.contentView.addConstraints(
+            NSLayoutConstraint.constraints(
+                withVisualFormat: "H:|-0-[picker]-0-|",
+                options: [],
+                metrics: nil,
+                views: ["picker": picker]
+            )
+        )
 
 		return picker
 
 	}()
 
-	public var lastFilterApplied: String?
+	open var lastFilterApplied: String?
 
-	public var optionForNewEntry: (String -> (option: T, displayValue: String)?)? = nil
+	open var optionForNewEntry: ((String) -> (option: T, displayValue: String)?)? = nil
 
-	public var filteredOptions: [T] = []
+	open var filteredOptions: [T] = []
 
-	private var pickerRow: FilterablePickerRow<T>? { return self.row as? FilterablePickerRow<T> }
+	fileprivate var pickerRow: FilterablePickerRow<T>? {
+        return self.row as? FilterablePickerRow<T>
+    }
 
 	public required init(style: UITableViewCellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: reuseIdentifier)
 	}
+    
+    required public init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
 
-	public override func setup() {
+	open override func setup() {
 		super.setup()
-		accessoryType = .None
-		editingAccessoryType = .None
+		accessoryType = .none
+		editingAccessoryType = .none
 		self.picker.delegate = self
 		self.picker.dataSource = self
 		self.filteredOptions = self.pickerRow?.options ?? []
@@ -69,32 +96,33 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 		self.picker.dataSource = nil
 	}
 
-	public override func update() {
+	open override func update() {
 		super.update()
-		self.selectionStyle = .None
+		self.selectionStyle = .none
 		textLabel?.text = nil
 		detailTextLabel?.text = nil
 		self.picker.reloadAllComponents()
 		if let selectedValue = self.pickerRow?.value,
-			index = self.pickerRow?.options.indexOf(selectedValue)
+			let index = self.pickerRow?.options.index(of: selectedValue)
 		{
 			self.picker.selectRow(index, inComponent: 0, animated: true)
 		}
 	}
 
-	public func textFieldDidChange(textField: UITextField) {
-		updateResultsWithNewFilter(textField.text)
+	open func textFieldDidChange(_ textField: UITextField) {
+        self.updateResults(newFilter: textField.text)
 	}
 
-	public func shouldIncludeItem(item: T, term: String) -> Bool {
+	open func shouldIncludeItem(_ item: T, term: String) -> Bool {
 		return self.row.displayValueFor?(item)?.resultFor(term: term) ?? false
 	}
 
-	public func shouldIncludeItem<T where T: StringSearchable>(item: T, term: String) -> Bool {
+	open func shouldIncludeItem<T>(_ item: T, term: String) -> Bool
+    where T: StringSearchable {
 		return item.resultFor(term: term)
 	}
 
-	public func updateResultsWithNewFilter(filter: String?, forced: Bool = false) {
+	open func updateResults(newFilter filter: String?, forced: Bool = false) {
 
 		guard filter != lastFilterApplied || forced else {
 			return
@@ -104,12 +132,13 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 
 		if let newFilter = self.lastFilterApplied {
 
-			self.filteredOptions = self.pickerRow?.options.filter { (item) -> Bool in
+			self.filteredOptions = self.pickerRow?.options.filter {
+                (item) -> Bool in
 				return self.shouldIncludeItem(item, term: newFilter)
 			} ?? []
 
-			if let block = self.optionForNewEntry, additionalOption = block(newFilter)
-			where newFilter != "" {
+			if let block = self.optionForNewEntry,
+                let additionalOption = block(newFilter), newFilter != "" {
 				self.filteredOptions = [additionalOption.option] + filteredOptions
 			}
 
@@ -122,61 +151,68 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 		if self.filteredOptions.count == 1 {
 			self.selectFilteredOption(0)
 		} else if let picker = self.pickerRow,
-			value = picker.value,
-			row = self.filteredOptions.indexOf(value)
-		where !picker.options.isEmpty {
+			let value = picker.value,
+			let row = self.filteredOptions.index(of: value),
+            !picker.options.isEmpty {
 			self.picker.selectRow(row, inComponent: 0, animated: true)
 		}
 
 	}
 
-	public func selectFilteredOption(row: Int) {
-		if let picker = self.pickerRow where !picker.options.isEmpty && row < self.filteredOptions.count {
+	open func selectFilteredOption(_ row: Int) {
+		if let picker = self.pickerRow,
+            !picker.options.isEmpty && row < self.filteredOptions.count {
 			picker.value = self.filteredOptions[row]
 		}
 	}
 
-	override public func cellCanBecomeFirstResponder() -> Bool {
+	override open func cellCanBecomeFirstResponder() -> Bool {
 		return true
 	}
 
 	// MARK: Picker view delegate
 
-	public func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+	open func numberOfComponents(in pickerView: UIPickerView) -> Int {
 		return 1
 	}
 
-	public func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+	open func pickerView(
+        _ pickerView: UIPickerView,
+        numberOfRowsInComponent component: Int
+    ) -> Int {
 		return self.filteredOptions.count ?? 0
 	}
 
-	public func pickerView(
-		pickerView: UIPickerView,
+	open func pickerView(
+		_ pickerView: UIPickerView,
 		titleForRow row: Int,
 		forComponent component: Int
 	) -> String? {
 
 		if let filter = self.lastFilterApplied,
-			block = self.optionForNewEntry,
-			tuple = block(filter)
-		where filter != "" && row == 0 {
+			let block = self.optionForNewEntry,
+			let tuple = block(filter), filter != "" && row == 0 {
 			return tuple.displayValue
 		}
 
 		return self.pickerRow?.displayValueFor?(self.filteredOptions[row])
 	}
 
-	public func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+	open func pickerView(
+        _ pickerView: UIPickerView,
+        didSelectRow row: Int,
+        inComponent component: Int
+    ) {
 		self.selectFilteredOption(row)
 	}
 
 	// MARK: Text field delegate
 
-	public func textFieldDidBeginEditing(textField: UITextField) {
-
-		if let v = formViewController()?.inputAccessoryViewForRow(row) as? NavigationAccessoryView {
-			v.previousButton.enabled = false
-			v.nextButton.enabled = false
+	open func textFieldDidBeginEditing(_ textField: UITextField) {
+        
+        if let v = self.formViewController()?.inputAccessoryView(for: row) as? NavigationAccessoryView {
+			v.previousButton.isEnabled = false
+			v.nextButton.isEnabled = false
 			textField.inputAccessoryView = v
 		}
 
@@ -186,9 +222,9 @@ public class FilterablePickerCell<T where T: Equatable>: Cell<T>, CellType, UIPi
 
 //MARK: - Filterable Picker Row
 
-public final class FilterablePickerRow<T where T: Equatable>: Row<T, FilterablePickerCell<T>>, RowType {
+public final class FilterablePickerRow<T: Equatable>: Row<FilterablePickerCell<T>>, RowType {
 
-	public var optionForNewEntry: (String -> (option: T, displayValue: String)?)? {
+	public var optionForNewEntry: ((String) -> (option: T, displayValue: String)?)? {
 		get {
 			return self.cell.optionForNewEntry
 		}
@@ -199,8 +235,8 @@ public final class FilterablePickerRow<T where T: Equatable>: Row<T, FilterableP
 
 	public var options = [T]() {
 		didSet {
-			self.cell.updateResultsWithNewFilter(
-				self.cell.filterField.text,
+			self.cell.updateResults(
+                newFilter: self.cell.filterField.text,
 				forced: true
 			)
 		}
@@ -220,24 +256,28 @@ public final class FilterablePickerRow<T where T: Equatable>: Row<T, FilterableP
 
 //MARK: - Filterable Picker Inline Cell
 
-public class FilterablePickerInlineCell<T where T: Equatable>: Cell<T>, CellType {
+open class FilterablePickerInlineCell<T: Equatable>: Cell<T>, CellType {
 
 	required public init(style: UITableViewCellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: reuseIdentifier)
 	}
+    
+    required public init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
 
-	public override func setup() {
+	open override func setup() {
 		super.setup()
-		self.accessoryType = .None
-		self.editingAccessoryType = .None
+		self.accessoryType = .none
+		self.editingAccessoryType = .none
 	}
 
-	public override func update() {
+	open override func update() {
 		super.update()
-		self.selectionStyle = self.row.isDisabled ? .None : .Default
+		self.selectionStyle = self.row.isDisabled ? .none : .default
 	}
 
-	public override func didSelect() {
+	open override func didSelect() {
 		super.didSelect()
 		self.row.deselect()
 	}
@@ -245,9 +285,9 @@ public class FilterablePickerInlineCell<T where T: Equatable>: Cell<T>, CellType
 
 //MARK: - Filterable Picker Inline Row
 
-public final class FilterablePickerInlineRow<T where T: Equatable>: Row<T, FilterablePickerInlineCell<T>>, RowType, InlineRowType, NoValueDisplayTextConformance {
+public final class FilterablePickerInlineRow<T: Equatable>: Row<FilterablePickerInlineCell<T>>, RowType, InlineRowType, NoValueDisplayTextConformance {
 
-	public var optionForNewEntry: (String -> (option: T, displayValue: String)?)? {
+	public var optionForNewEntry: ((String) -> (option: T, displayValue: String)?)? {
 		didSet {
 			self.inlineRow?.optionForNewEntry = self.optionForNewEntry
 		}
@@ -284,11 +324,11 @@ public final class FilterablePickerInlineRow<T where T: Equatable>: Row<T, Filte
 		}
 	}
 
-	public func setupInlineRow(inlineRow: InlineRow) {
+	public func setupInlineRow(_ inlineRow: InlineRow) {
 		inlineRow.options = self.options
 		inlineRow.displayValueFor = self.displayValueFor
 		inlineRow.filterPlaceholder = self.filterPlaceholder
-		inlineRow.cell.selectionStyle = .None
+		inlineRow.cell.selectionStyle = .none
 		inlineRow.optionForNewEntry = self.optionForNewEntry
 	}
 

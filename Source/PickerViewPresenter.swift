@@ -11,7 +11,7 @@
 import Foundation
 import UIKit
 
-public class PickerViewPresenter: UITextField {
+open class PickerViewPresenter: UITextField {
 
 	// MARK: - Initialization
 
@@ -27,42 +27,42 @@ public class PickerViewPresenter: UITextField {
 
 	// MARK: - Public
 
-	public var pickerDelegate: UIPickerViewDelegate? {
+	open var pickerDelegate: UIPickerViewDelegate? {
 		didSet {
 			pickerView.delegate = pickerDelegate
 		}
 	}
 
-	public var pickerDataSource: UIPickerViewDataSource? {
+	open var pickerDataSource: UIPickerViewDataSource? {
 		didSet {
 			pickerView.dataSource = pickerDataSource
 		}
 	}
 
-	public var currentlySelectedRow: Int {
-		return pickerView.selectedRowInComponent(0)
+	open var currentlySelectedRow: Int {
+		return pickerView.selectedRow(inComponent: 0)
 	}
 
-	public func selectRowAtIndex(index: Int) {
+	open func selectRowAtIndex(_ index: Int) {
 		pickerView.selectRow(index, inComponent: 0, animated: true)
 	}
 
-	public func showPicker() {
+	open func showPicker() {
 		self.becomeFirstResponder()
 	}
 
-	public func hidePicker() {
+	open func hidePicker() {
 		self.resignFirstResponder()
 	}
 
-	public func reloadAllComponents() {
+	open func reloadAllComponents() {
 		self.pickerView.reloadAllComponents()
 	}
 
 	// MARK: - Views
 
-	private let pickerView = UIPickerView(frame: CGRect.zero)
+	fileprivate let pickerView = UIPickerView(frame: CGRect.zero)
 
-	public var pickerInputAccessoryView: UIView? = nil
+	open var pickerInputAccessoryView: UIView? = nil
 
 }

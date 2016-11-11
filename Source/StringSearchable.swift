@@ -16,13 +16,13 @@ public protocol StringSearchable: Equatable {
 	 - parameter term Search query.
 	 - return `true` if this item should be returned.
 	 */
-	func resultFor(term term: String) -> Bool
+	func resultFor(term: String) -> Bool
 
 }
 
 extension String: StringSearchable {
 
-	public func resultFor(term term: String) -> Bool {
+	public func resultFor(term: String) -> Bool {
 
 		if term.characters.count == 0 {
 			return true;
@@ -39,7 +39,7 @@ extension String: StringSearchable {
 			longer = term
 		}
 
-		return longer.lowercaseString.containsString(shorter.lowercaseString)
+		return longer.lowercased().contains(shorter.lowercased())
 
 	}
 

@@ -8,9 +8,9 @@
 
 import Eureka
 
-public class KeyboardPickerCell<T where T: Equatable>: Cell<T>, CellType, UIPickerViewDataSource, UIPickerViewDelegate {
+open class KeyboardPickerCell<T>: Cell<T>, CellType, UIPickerViewDataSource, UIPickerViewDelegate where T: Equatable {
 
-	public lazy var picker: PickerViewPresenter = { [unowned self] in
+	open lazy var picker: PickerViewPresenter = { [unowned self] in
 		let pickerViewPresenter = PickerViewPresenter()
 		pickerViewPresenter.pickerDelegate = self
 		pickerViewPresenter.pickerDataSource = self
@@ -18,79 +18,100 @@ public class KeyboardPickerCell<T where T: Equatable>: Cell<T>, CellType, UIPick
 		return pickerViewPresenter
 	}()
 
-	private var pickerRow: KeyboardPickerRow<T>? {
+	fileprivate var pickerRow: KeyboardPickerRow<T>? {
 		return row as? KeyboardPickerRow<T>
 	}
 
 	public required init(style: UITableViewCellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: reuseIdentifier)
 	}
+    
+    required public init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
 
-	public override func setup() {
+	open override func setup() {
 		super.setup()
-		accessoryType = .None
-		editingAccessoryType = .None
-		picker.pickerDelegate = self
-		picker.pickerDataSource = self
+		self.accessoryType = .none
+		self.editingAccessoryType = .none
+		self.picker.pickerDelegate = self
+		self.picker.pickerDataSource = self
 	}
 
 	deinit {
-		picker.pickerDelegate = nil
-		picker.pickerDataSource = nil
+		self.picker.pickerDelegate = nil
+		self.picker.pickerDataSource = nil
 	}
 
-	public override func update() {
+	open override func update() {
 		super.update()
 
-		textLabel?.text = pickerRow?.title
-		detailTextLabel?.text = pickerRow?.displayValueFor?(pickerRow?.value)
-		picker.reloadAllComponents()
-		if let selectedValue = pickerRow?.value, let index = pickerRow?.options.indexOf(selectedValue) {
-			picker.selectRowAtIndex(index)
+		self.textLabel?.text = self.pickerRow?.title
+		self.detailTextLabel?.text =
+            self.pickerRow?.displayValueFor?(self.pickerRow?.value)
+		self.picker.reloadAllComponents()
+		if let selectedValue = self.pickerRow?.value,
+            let index = self.pickerRow?.options.index(of: selectedValue) {
+			self.picker.selectRowAtIndex(index)
 		}
 
 	}
 
-	public override func cellCanBecomeFirstResponder() -> Bool {
+	open override func cellCanBecomeFirstResponder() -> Bool {
 		return true
 	}
 
-	public override func cellBecomeFirstResponder(direction: Direction) -> Bool {
-		picker.pickerInputAccessoryView = inputAccessoryView
-		picker.showPicker()
-		return super.cellBecomeFirstResponder(direction)
+	open override func cellBecomeFirstResponder(
+        withDirection direction: Direction
+    ) -> Bool {
+		self.picker.pickerInputAccessoryView = self.inputAccessoryView
+		self.picker.showPicker()
+		return super.cellBecomeFirstResponder(withDirection: direction)
 	}
 
-	public override func cellResignFirstResponder() -> Bool {
-		picker.hidePicker()
+	open override func cellResignFirstResponder() -> Bool {
+		self.picker.hidePicker()
 		return super.cellResignFirstResponder()
 	}
 
 	// MARK: User interaction
 
-	public override func didSelect() {
-		pickerRow?.deselect()
-		self.cellBecomeFirstResponder(.Down)
+	open override func didSelect() {
+		self.pickerRow?.deselect()
+		self.cellBecomeFirstResponder(withDirection: .down)
 	}
 
 	// MARK: Picker
 
-	public func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+	open func numberOfComponents(in pickerView: UIPickerView) -> Int {
 		return 1
 	}
 
-	public func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-		return pickerRow?.options.count ?? 0
+	open func pickerView(
+        _ pickerView: UIPickerView,
+        numberOfRowsInComponent component: Int
+    ) -> Int {
+		return self.pickerRow?.options.count ?? 0
 	}
 
-	public func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-		return pickerRow?.displayValueFor?(pickerRow?.options[row])
+	open func pickerView(
+        _ pickerView: UIPickerView,
+        titleForRow row: Int,
+        forComponent component: Int
+    ) -> String? {
+		return pickerRow?.displayValueFor?(self.pickerRow?.options[row])
 	}
 
-	public func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-		if let picker = pickerRow where !picker.options.isEmpty {
+	open func pickerView(
+        _ pickerView: UIPickerView,
+        didSelectRow row: Int,
+        inComponent component: Int
+    ) {
+		if let picker = self.pickerRow, !picker.options.isEmpty {
 			picker.value = picker.options[row]
-			detailTextLabel?.text = pickerRow?.displayValueFor?(pickerRow?.value)
+			self.detailTextLabel?.text = self.pickerRow?.displayValueFor?(
+                pickerRow?.value
+            )
 		}
 	}
 
@@ -98,7 +119,7 @@ public class KeyboardPickerCell<T where T: Equatable>: Cell<T>, CellType, UIPick
 
 /// A generic row where the user can pick an option from a picker view and the
 /// picker replaces the keyboard
-public final class KeyboardPickerRow<T where T: Equatable>: Row<T, KeyboardPickerCell<T>>, RowType {
+public final class KeyboardPickerRow<T>: Row<KeyboardPickerCell<T>>, RowType where T: Equatable {
 
 	public var options = [T]()
 

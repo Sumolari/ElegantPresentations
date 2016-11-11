@@ -138,6 +138,6 @@ Pod::Spec.new do |s|
   # s.requires_arc = true
 
   # s.xcconfig = { "HEADER_SEARCH_PATHS" => "$(SDKROOT)/usr/include/libxml2" }
-  s.dependency "Eureka", "~> 1.6"
+  s.dependency "Eureka", "~> 2.0.0-beta1"
 
 end

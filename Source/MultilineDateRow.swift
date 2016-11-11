@@ -8,125 +8,154 @@
 
 import Eureka
 
-public class MultilineDateCell: Cell<NSDate>, CellType {
+open class MultilineDateCell: Cell<Date>, CellType {
 
-	lazy public var datePicker = UIDatePicker()
+	lazy open var datePicker = UIDatePicker()
 
 	public required init(style: UITableViewCellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: reuseIdentifier)
 	}
+    
+    required public init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
 
-	public override func setup() {
+	open override func setup() {
 		super.setup()
 
-		NSLayoutConstraint.deactivateConstraints(textLabel?.constraints ?? [])
-		NSLayoutConstraint.deactivateConstraints(detailTextLabel?.constraints ?? [])
-		textLabel?.translatesAutoresizingMaskIntoConstraints = false
-		detailTextLabel?.translatesAutoresizingMaskIntoConstraints = false
+		NSLayoutConstraint.deactivate(self.textLabel?.constraints ?? [])
+		NSLayoutConstraint.deactivate(self.detailTextLabel?.constraints ?? [])
+		self.textLabel?.translatesAutoresizingMaskIntoConstraints = false
+		self.detailTextLabel?.translatesAutoresizingMaskIntoConstraints = false
 
-		let views = ["textLabel": textLabel!, "detailTextLabel": detailTextLabel!]
+		let views = [
+            "textLabel": self.textLabel!,
+            "detailTextLabel": self.detailTextLabel!
+        ]
 
 		let constraints =
-			NSLayoutConstraint.constraintsWithVisualFormat("|-[textLabel]-|", options: [], metrics: [:], views: views) +
-			NSLayoutConstraint.constraintsWithVisualFormat("V:|-[textLabel]-[detailTextLabel]-|", options: [], metrics: [:], views: views) +
-			NSLayoutConstraint.constraintsWithVisualFormat("|-[detailTextLabel]-|", options: [], metrics: [:], views: views)
-		contentView.addConstraints(constraints)
+			NSLayoutConstraint.constraints(
+                withVisualFormat: "|-[textLabel]-|",
+                options: [],
+                metrics: [:],
+                views: views
+            ) +
+			NSLayoutConstraint.constraints(
+                withVisualFormat: "V:|-[textLabel]-[detailTextLabel]-|",
+                options: [],
+                metrics: [:],
+                views: views
+            ) +
+			NSLayoutConstraint.constraints(
+                withVisualFormat: "|-[detailTextLabel]-|",
+                options: [],
+                metrics: [:],
+                views: views
+            )
+		self.contentView.addConstraints(constraints)
 
-		accessoryType = .None
-		editingAccessoryType = .None
-		datePicker.datePickerMode = datePickerMode()
-		datePicker.addTarget(self, action: #selector(MultilineDateCell.datePickerValueChanged(_:)), forControlEvents: .ValueChanged)
+		self.accessoryType = .none
+		self.editingAccessoryType = .none
+		self.datePicker.datePickerMode = datePickerMode()
+		self.datePicker.addTarget(
+            self,
+            action: #selector(MultilineDateCell.datePickerValueChanged(_:)),
+            for: .valueChanged
+        )
 	}
 
 	deinit {
-		datePicker.removeTarget(self, action: nil, forControlEvents: .AllEvents)
+		datePicker.removeTarget(self, action: nil, for: .allEvents)
 	}
 
-	public override func update() {
+	open override func update() {
 		super.update()
 
-		selectionStyle = row.isDisabled ? .None : .Default
-		datePicker.setDate(row.value ?? NSDate(), animated: row is CountDownPickerRow)
-		datePicker.minimumDate = (row as? DatePickerRowProtocol)?.minimumDate
-		datePicker.maximumDate = (row as? DatePickerRowProtocol)?.maximumDate
-		if let minuteIntervalValue = (row as? DatePickerRowProtocol)?.minuteInterval {
-			datePicker.minuteInterval = minuteIntervalValue
+		self.selectionStyle = self.row.isDisabled ? .none : .default
+		self.datePicker.setDate(
+            self.row.value ?? Date(),
+            animated: row is CountDownPickerRow
+        )
+		self.datePicker.minimumDate =
+            (self.row as? DatePickerRowProtocol)?.minimumDate
+		self.datePicker.maximumDate =
+            (self.row as? DatePickerRowProtocol)?.maximumDate
+		if let minuteIntervalValue = (self.row as? DatePickerRowProtocol)?.minuteInterval {
+			self.datePicker.minuteInterval = minuteIntervalValue
 		}
 	}
 
-	public override func didSelect() {
+	open override func didSelect() {
 		super.didSelect()
 		row.deselect()
 	}
 
-	override public var inputView: UIView? {
+	override open var inputView: UIView? {
 		if let v = row.value {
 			datePicker.setDate(v, animated: row is CountDownRow)
 		}
 		return datePicker
 	}
 
-	func datePickerValueChanged(sender: UIDatePicker) {
+	func datePickerValueChanged(_ sender: UIDatePicker) {
 		row.value = sender.date
 		detailTextLabel?.text = row.displayValueFor?(row.value)
 	}
 
-	private func datePickerMode() -> UIDatePickerMode {
+	fileprivate func datePickerMode() -> UIDatePickerMode {
 		switch row {
 		case is DateRow:
-			return .Date
+			return .date
 		case is TimeRow:
-			return .Time
+			return .time
 		case is DateTimeRow:
-			return .DateAndTime
+			return .dateAndTime
 		case is CountDownRow:
-			return .CountDownTimer
+			return .countDownTimer
 		default:
-			return .Date
+			return .date
 		}
 	}
 
-	public override func cellCanBecomeFirstResponder() -> Bool {
-		return canBecomeFirstResponder()
+	open override func cellCanBecomeFirstResponder() -> Bool {
+		return !self.row.isDisabled
 	}
 
-	public override func canBecomeFirstResponder() -> Bool {
-		return !row.isDisabled;
-	}
 }
 
-public class _MultilineDateFieldRow: Row<NSDate, MultilineDateCell>, DatePickerRowProtocol, NoValueDisplayTextConformance {
+open class _MultilineDateFieldRow: Row<MultilineDateCell>, DatePickerRowProtocol, NoValueDisplayTextConformance {
 
 	/// The minimum value for this row's UIDatePicker
-	public var minimumDate: NSDate?
+	open var minimumDate: Date?
 
 	/// The maximum value for this row's UIDatePicker
-	public var maximumDate: NSDate?
+	open var maximumDate: Date?
 
 	/// The interval between options for this row's UIDatePicker
-	public var minuteInterval: Int?
+	open var minuteInterval: Int?
 
 	/// The formatter for the date picked by the user
-	public var dateFormatter: NSDateFormatter?
+	open var dateFormatter: DateFormatter?
 
-	public var noValueDisplayText: String? = " "
+	open var noValueDisplayText: String? = " "
 
 	required public init(tag: String?) {
 		super.init(tag: tag)
-		displayValueFor = { [unowned self] value in
+		self.displayValueFor = { [unowned self] value in
 			guard let val = value, let formatter = self.dateFormatter else { return nil }
-			return formatter.stringFromDate(val)
+			return formatter.string(from: val)
 		}
 	}
+    
 }
 
-public class _MultilineDateRow: _MultilineDateFieldRow {
+open class _MultilineDateRow: _MultilineDateFieldRow {
 	required public init(tag: String?) {
 		super.init(tag: tag)
-		dateFormatter = NSDateFormatter()
-		dateFormatter?.timeStyle = .NoStyle
-		dateFormatter?.dateStyle = .MediumStyle
-		dateFormatter?.locale = NSLocale.currentLocale()
+		self.dateFormatter = DateFormatter()
+		self.dateFormatter?.timeStyle = .none
+		self.dateFormatter?.dateStyle = .medium
+		self.dateFormatter?.locale = Locale.current
 	}
 }
 
@@ -134,12 +163,16 @@ public class _MultilineDateRow: _MultilineDateFieldRow {
 public final class MultilineDateRow: _MultilineDateRow, RowType {
 	required public init(tag: String?) {
 		super.init(tag: tag)
-		onCellHighlight { cell, row in
-			let color = cell.detailTextLabel?.textColor
-			row.onCellUnHighlight { cell, _ in
-				cell.detailTextLabel?.textColor = color
-			}
-			cell.detailTextLabel?.textColor = cell.tintColor
+        
+        let color = cell.detailTextLabel?.textColor
+        
+		onCellHighlightChanged { cell, row in
+            if row.isHighlighted {
+                cell.detailTextLabel?.textColor = cell.tintColor
+            } else {
+                cell.detailTextLabel?.textColor = color
+            }
 		}
+        
 	}
 }

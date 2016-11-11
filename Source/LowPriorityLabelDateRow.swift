@@ -8,9 +8,9 @@
 
 import Eureka
 
-public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
+open class LowPriorityLabelDateCell: Cell<Date>, CellType {
 
-	lazy public var datePicker = UIDatePicker()
+	lazy open var datePicker = UIDatePicker()
 
 	var containerLeadingAnchorToTitleLabelLeadingConstraint: NSLayoutConstraint? = nil
 	var containerTopAnchorToTitleLabelTopConstraint: NSLayoutConstraint? = nil
@@ -23,29 +23,39 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 	public required init(style: UITableViewCellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: NSStringFromClass(LowPriorityLabelDateCell))
 	}
+    
+    required public init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
 
-	public override func setup() {
+	open override func setup() {
 		super.setup()
 
 		// textLabel?.setContentHuggingPriority(UILayoutPriorityDefaultLow, forAxis: .Horizontal)
-		textLabel?.lineBreakMode = .ByTruncatingHead
-		textLabel?.adjustsFontSizeToFitWidth = true
+		self.textLabel?.lineBreakMode = .byTruncatingHead
+		self.textLabel?.adjustsFontSizeToFitWidth = true
 
 		// detailTextLabel?.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, forAxis: .Horizontal)
 
-		accessoryType = .None
-		editingAccessoryType = .None
-		datePicker.datePickerMode = datePickerMode()
-		datePicker.addTarget(self, action: #selector(LowPriorityLabelDateCell.datePickerValueChanged(_:)), forControlEvents: .ValueChanged)
+		self.accessoryType = .none
+		self.editingAccessoryType = .none
+		self.datePicker.datePickerMode = self.datePickerMode()
+		self.datePicker.addTarget(
+            self,
+            action: #selector(self.datePickerValueChanged(_:)),
+            for: .valueChanged
+        )
 
 		self.setNeedsUpdateConstraints()
 	}
 
-	public override func updateConstraints() {
+	open override func updateConstraints() {
 		super.updateConstraints()
 
-		guard let textLabel = self.textLabel, detailTextLabel = self.detailTextLabel
-		where textLabel.superview === self.contentView && detailTextLabel.superview === self.contentView
+		guard let textLabel = self.textLabel,
+            let detailTextLabel = self.detailTextLabel,
+            textLabel.superview === self.contentView &&
+            detailTextLabel.superview === self.contentView
 		else { return }
 
 		textLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -58,9 +68,9 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 			constraintsToBeEnabled.append(constraint)
 		} else {
 			let constraint = NSLayoutConstraint(
-				attribute: .Leading,
+				attribute: .leading,
 				ofView: textLabel,
-				equalToAttribute: .LeadingMargin,
+				equalToAttribute: .leadingMargin,
 				ofView: self.contentView
 			)
 			constraintsToBeAdded.append(constraint)
@@ -71,9 +81,9 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 			constraintsToBeEnabled.append(constraint)
 		} else {
 			let constraint = NSLayoutConstraint(
-				attribute: .Top,
+				attribute: .top,
 				ofView: textLabel,
-				equalToAttribute: .TopMargin,
+				equalToAttribute: .topMargin,
 				ofView: self.contentView
 			)
 			constraint.priority = UILayoutPriorityDefaultHigh
@@ -85,9 +95,9 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 			constraintsToBeEnabled.append(constraint)
 		} else {
 			let constraint = NSLayoutConstraint(
-				attribute: .Bottom,
+				attribute: .bottom,
 				ofView: textLabel,
-				equalToAttribute: .BottomMargin,
+				equalToAttribute: .bottomMargin,
 				ofView: self.contentView
 			)
 			constraintsToBeAdded.append(constraint)
@@ -98,9 +108,9 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 			constraintsToBeEnabled.append(constraint)
 		} else {
 			let constraint = NSLayoutConstraint(
-				attribute: .Trailing,
+				attribute: .trailing,
 				ofView: textLabel,
-				equalToAttribute: .Leading,
+				equalToAttribute: .leading,
 				ofView: detailTextLabel
 			)
 			constraintsToBeAdded.append(constraint)
@@ -111,9 +121,9 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 			constraintsToBeEnabled.append(constraint)
 		} else {
 			let constraint = NSLayoutConstraint(
-				attribute: .Top,
+				attribute: .top,
 				ofView: textLabel,
-				equalToAttribute: .Top,
+				equalToAttribute: .top,
 				ofView: detailTextLabel
 			)
 			constraintsToBeAdded.append(constraint)
@@ -124,9 +134,9 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 			constraintsToBeEnabled.append(constraint)
 		} else {
 			let constraint = NSLayoutConstraint(
-				attribute: .Bottom,
+				attribute: .bottom,
 				ofView: textLabel,
-				equalToAttribute: .Bottom,
+				equalToAttribute: .bottom,
 				ofView: detailTextLabel
 			)
 			constraintsToBeAdded.append(constraint)
@@ -137,9 +147,9 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 			constraintsToBeEnabled.append(constraint)
 		} else {
 			let constraint = NSLayoutConstraint(
-				attribute: .Trailing,
+				attribute: .trailing,
 				ofView: detailTextLabel,
-				equalToAttribute: .TrailingMargin,
+				equalToAttribute: .trailingMargin,
 				ofView: self.contentView
 			)
 			constraintsToBeAdded.append(constraint)
@@ -147,102 +157,104 @@ public class LowPriorityLabelDateCell: Cell<NSDate>, CellType {
 		}
 
 		self.contentView.addConstraints(constraintsToBeAdded)
-		NSLayoutConstraint.activateConstraints(constraintsToBeEnabled)
+		NSLayoutConstraint.activate(constraintsToBeEnabled)
 
 	}
 
 	deinit {
-		datePicker.removeTarget(self, action: nil, forControlEvents: .AllEvents)
+		self.datePicker.removeTarget(self, action: nil, for: .allEvents)
 	}
 
-	public override func update() {
+	open override func update() {
 		super.update()
 
-		selectionStyle = row.isDisabled ? .None : .Default
-		datePicker.setDate(row.value ?? NSDate(), animated: row is CountDownPickerRow)
-		datePicker.minimumDate = (row as? DatePickerRowProtocol)?.minimumDate
-		datePicker.maximumDate = (row as? DatePickerRowProtocol)?.maximumDate
-		if let minuteIntervalValue = (row as? DatePickerRowProtocol)?.minuteInterval {
-			datePicker.minuteInterval = minuteIntervalValue
+		self.selectionStyle = self.row.isDisabled ? .none : .default
+		self.datePicker.setDate(
+            self.row.value ?? Date(),
+            animated: row is CountDownPickerRow
+        )
+		self.datePicker.minimumDate =
+            (self.row as? DatePickerRowProtocol)?.minimumDate
+		self.datePicker.maximumDate =
+            (self.row as? DatePickerRowProtocol)?.maximumDate
+		if let minuteIntervalValue = (self.row as? DatePickerRowProtocol)?.minuteInterval {
+			self.datePicker.minuteInterval = minuteIntervalValue
 		}
 
 		self.setNeedsUpdateConstraints()
 
 	}
 
-	public override func didSelect() {
+	open override func didSelect() {
 		super.didSelect()
-		row.deselect()
+		self.row.deselect()
 	}
 
-	override public var inputView: UIView? {
-		if let v = row.value {
-			datePicker.setDate(v, animated: row is CountDownRow)
+	override open var inputView: UIView? {
+		if let v = self.row.value {
+			self.datePicker.setDate(v, animated: row is CountDownRow)
 		}
-		return datePicker
+		return self.datePicker
 	}
 
-	func datePickerValueChanged(sender: UIDatePicker) {
-		row.value = sender.date
-		detailTextLabel?.text = row.displayValueFor?(row.value)
+	func datePickerValueChanged(_ sender: UIDatePicker) {
+		self.row.value = sender.date
+		self.detailTextLabel?.text = self.row.displayValueFor?(self.row.value)
 	}
 
-	private func datePickerMode() -> UIDatePickerMode {
-		switch row {
+	fileprivate func datePickerMode() -> UIDatePickerMode {
+		switch self.row {
 		case is DateRow:
-			return .Date
+			return .date
 		case is TimeRow:
-			return .Time
+			return .time
 		case is DateTimeRow:
-			return .DateAndTime
+			return .dateAndTime
 		case is CountDownRow:
-			return .CountDownTimer
+			return .countDownTimer
 		default:
-			return .Date
+			return .date
 		}
 	}
 
-	public override func cellCanBecomeFirstResponder() -> Bool {
-		return canBecomeFirstResponder()
+	open override func cellCanBecomeFirstResponder() -> Bool {
+		return !self.row.isDisabled
 	}
 
-	public override func canBecomeFirstResponder() -> Bool {
-		return !row.isDisabled;
-	}
 }
 
-public class _LowPriorityLabelDateFieldRow: Row<NSDate, LowPriorityLabelDateCell>, DatePickerRowProtocol, NoValueDisplayTextConformance {
+open class _LowPriorityLabelDateFieldRow: Row<LowPriorityLabelDateCell>, DatePickerRowProtocol, NoValueDisplayTextConformance {
 
 	/// The minimum value for this row's UIDatePicker
-	public var minimumDate: NSDate?
+	open var minimumDate: Date?
 
 	/// The maximum value for this row's UIDatePicker
-	public var maximumDate: NSDate?
+	open var maximumDate: Date?
 
 	/// The interval between options for this row's UIDatePicker
-	public var minuteInterval: Int?
+	open var minuteInterval: Int?
 
 	/// The formatter for the date picked by the user
-	public var dateFormatter: NSDateFormatter?
+	open var dateFormatter: DateFormatter?
 
-	public var noValueDisplayText: String? = " "
+	open var noValueDisplayText: String? = " "
 
 	required public init(tag: String?) {
 		super.init(tag: tag)
 		displayValueFor = { [unowned self] value in
 			guard let val = value, let formatter = self.dateFormatter else { return nil }
-			return formatter.stringFromDate(val)
+            return formatter.string(from: val)
 		}
 	}
 }
 
-public class _LowPriorityLabelDateRow: _LowPriorityLabelDateFieldRow {
+open class _LowPriorityLabelDateRow: _LowPriorityLabelDateFieldRow {
 	required public init(tag: String?) {
 		super.init(tag: tag)
-		dateFormatter = NSDateFormatter()
-		dateFormatter?.timeStyle = .NoStyle
-		dateFormatter?.dateStyle = .MediumStyle
-		dateFormatter?.locale = NSLocale.currentLocale()
+		self.dateFormatter = DateFormatter()
+		self.dateFormatter?.timeStyle = .none
+		self.dateFormatter?.dateStyle = .medium
+		self.dateFormatter?.locale = Locale.current
 	}
 }
 
@@ -250,12 +262,13 @@ public class _LowPriorityLabelDateRow: _LowPriorityLabelDateFieldRow {
 public final class LowPriorityLabelDateRow: _LowPriorityLabelDateRow, RowType {
 	required public init(tag: String?) {
 		super.init(tag: tag)
-		onCellHighlight { cell, row in
-			let color = cell.detailTextLabel?.textColor
-			row.onCellUnHighlight { cell, _ in
-				cell.detailTextLabel?.textColor = color
-			}
-			cell.detailTextLabel?.textColor = cell.tintColor
+        let color = cell.detailTextLabel?.textColor
+		self.onCellHighlightChanged { cell, row in
+            if row.isHighlighted {
+                cell.detailTextLabel?.textColor = cell.tintColor
+            } else {
+                cell.detailTextLabel?.textColor = color
+            }
 		}
 	}
 }
